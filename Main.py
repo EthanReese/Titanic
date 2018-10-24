@@ -5,30 +5,33 @@
 import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import train_test_split
 
 data = pd.read_csv('/Users/Ethan/Devel/data/Titanic/train.csv')
 
-np.append(data, np.zeros((data['Sex'].length, 1), dtype=int64)
+data = data.assign(Sex1= [0] * data['Sex'].size)
 
-for i in data['Sex']:
-    if data['Sex'][i] == "female":
-        data['Sex'][i] = 0
+for i in range(len(data['Sex'])):
+    if data['Sex'][i]  == 'male':
+        data['Sex1'][i] = 0
     else:
-        X['Sex'][i] = 1
+        data['Sex1'][i] = 1
 
+features = ['Pclass', 'Sex1', 'Age', 'Parch']
 
-features = ['Pclass', 'Sex', 'Age', 'Parch']
+data = data.dropna(axis=0)
 
 X = data[features]
 
 y = data.Survived
 
-data = data.dropna(axis=0)
+train_X, val_X, train_y, val_y = train_test_split(X, y, random_state = 0)
 
 model = DecisionTreeRegressor(random_state = 1)
 
-#model.fit(X,y)
+model.fit(train_X,train_y)
 
-X.head()
+val_predictions = model.predict(val_X)
 
-#model.predict(X.head())
+print(mean_absolute_error(val_y, val_predictions))
