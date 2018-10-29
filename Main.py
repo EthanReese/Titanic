@@ -7,6 +7,16 @@ import numpy as np
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import make_pipeline
+from xgboost import XGBRegressor
+
+
+def get_mae(max_leaf_nodes, train_X, val_X, train_y, val_y):
+    model = XGBRegressor(n_estimators = 1000, learning_rate = max_leaf_nodes)
+    model.fit(train_X,train_y, early_stopping_rounds=15, eval_set=[(val_X, val_y)])
+    val_predictions = model.predict(val_X)
+    return mean_absolute_error(val_y, val_predictions)
 
 data = pd.read_csv('/Users/Ethan/Devel/data/Titanic/train.csv')
 
@@ -18,20 +28,24 @@ for i in range(len(data['Sex'])):
     else:
         data['Sex1'][i] = 1
 
-features = ['Pclass', 'Sex1', 'Age', 'Parch']
+features = ['Pclass', 'Sex1', 'Age', 'Parch', 'SibSp', 'Fare']
 
 data = data.dropna(axis=0)
 
 X = data[features]
-
 y = data.Survived
+train_X, val_X, train_y, val_y = train_test_split(X, y)
 
-train_X, val_X, train_y, val_y = train_test_split(X, y, random_state = 0)
+my_imputer = SimpleImputer()
+train_X = my_imputer.fit_transform(train_X)
+val_X = my_imputer.transform(val_X)
 
-model = DecisionTreeRegressor(random_state = 1)
+best = 10.0
+bestInd = 0.0
 
-model.fit(train_X,train_y)
-
-val_predictions = model.predict(val_X)
-
-print(mean_absolute_error(val_y, val_predictions))
+for i in np.arange(0.01, 0.3, 0.01):
+    if get_mae(i, train_X, val_X, train_y, val_y) < best:
+            best = get_mae(i, train_X, val_X, train_y, val_y)
+            bestInd = i
+print(best)
+print(bestInd)
