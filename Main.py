@@ -28,13 +28,13 @@ for i in range(len(data['Sex'])):
     else:
         data['Sex1'][i] = 1
 
-features = ['Pclass', 'Sex1', 'Age', 'Parch', 'SibSp', 'Fare']
+features = [ 'Sex1', 'Age', 'Parch', 'Fare', 'Pclass']
 
 data = data.dropna(axis=0)
 
 X = data[features]
 y = data.Survived
-train_X, val_X, train_y, val_y = train_test_split(X, y)
+train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=0)
 
 my_imputer = SimpleImputer()
 train_X = my_imputer.fit_transform(train_X)
@@ -43,7 +43,7 @@ val_X = my_imputer.transform(val_X)
 best = 10.0
 bestInd = 0.0
 
-for i in np.arange(0.01, 0.3, 0.01):
+for i in np.arange(0.01, 0.3, 0.001):
     if get_mae(i, train_X, val_X, train_y, val_y) < best:
             best = get_mae(i, train_X, val_X, train_y, val_y)
             bestInd = i
