@@ -1,0 +1,17 @@
+\documentclass[11pt]{article}
+
+\begin{document}
+     In this experiment, gradient boosted trees, through the XGBoost library, are used to build the model. Gradient boosted trees have recently gained prevalence because of both their efficiency and effectiveness for building models around simple data sets, both for categorization and regression \cite{one}.
+
+     The model uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function \textit{f(x)}. This can be done by selecting any x and iterating using the equation:
+    \begin{equation}
+      x_i = x_{i-1} - \gamma\frac{d}{dx}f(x_{i-1})
+    \end{equation}
+
+    This sequence can continue iteratively until $x_i = x_{i-1}$, resulting ultimately in the x value for the minima of the function (the y falue)
+
+    Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error.
+
+    \bibliography{Bibliography.bib}{}
+    \bibliographystyle{plain}
+  \end{document}
