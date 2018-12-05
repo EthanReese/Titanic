@@ -1,16 +1,46 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
+
+\title{Predicting Deaths on the Titanic with Gradient Boosted Trees}
+\author{\sc{Ethan Reese}}
+\usepackage[margin=0.5in]{geometry}
 
 \begin{document}
-     In this experiment, gradient boosted trees, through the XGBoost library, are used to build the model. Gradient boosted trees have recently gained prevalence because of both their efficiency and effectiveness for building models around simple data sets, both for categorization and regression \cite{one}.
+      \maketitle
 
-     The model uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function \textit{f(x)}. This can be done by selecting any x and iterating using the equation:
+    \section{INTRODUCTION}
+     In this experiment, gradient boosted trees, through the XGBoost library, are used to build the model. Gradient boosted trees have recently gained prevalence because of both their efficiency and effectiveness for building models around simple data sets, both for categorization and regression \cite{one}. Many of the top scoring models on the data science competition website Kaggle use XGBoost as the underlying model. Gradient Boosted Trees are applicable to real world problems that use big data to predict future results and behavior. Notably, gradient boosted trees are aggressively used by major Wall Street firms to assess risk when offering a loan or decide whether securities are properly valued.
+
+     \section{BACKGROUND}
+     The model uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function $f(x)$. This can be done by selecting any x and iterating using the equation:
     \begin{equation}
       x_i = x_{i-1} - \gamma\frac{d}{dx}f(x_{i-1})
     \end{equation}
 
-    This sequence can continue iteratively until $x_i = x_{i-1}$, resulting ultimately in the x value for the minima of the function (the y falue)
+    $ \gamma $ is a constant that can be tuned to increase either precision or runtime speed. This sequence can continue iteratively until $x_i = x_{i-1}$, resulting ultimately in the x value for the minima of the function (the y value of this minima can be trivially calculated by plugging $x_i$ into $f(x)$).
 
-    Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error.
+    Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error. Gradient boosting algorithms generally contain many seperate weak predictors (algorithms that predict results with less than 50\% accuracy) and combine those results into a stronger predictor. The stronger predictor should have significantly lower error.
+
+    With XGBoost, the first step is to create a large set of decision trees. Decision trees can be constructed quickly by splitting up the data along artibrary lines into branches that ultimately lead to leafs. A singular leaf will then select a prediction that minimizes the mean square error for all of the points of test data that fit into the leaf, which will be the mean of the test data for simpler models. Trees use an imperfect greedy model to assign predictions to leafs because creating a perfect decsion tree is an np-complete problem \cite{two}.
+
+    XGBoost is an ensemble method, meaning that it combines the predictions dictated by many decision trees into a much more accurate result. It does this by summing the predictions from multiple separate trees \cite{three}. For example, if it was using four trees, then the prediction $P(x)$ would be found with the following equation where $p_{n}(x)$ is the prediction of tree $n$:
+    \begin{equation}
+      P(x) = p_{1}(x) + p_{2}(x) + p_{3}(x) + p_{4}(x)
+    \end{equation}
+    Then, the difference between the prediction $P(x)$ and the actual outcome $f(x)$, or the residual value, is calculated \cite{three}.
+    \begin{equation}
+      R(x) = f(x) - P(x)
+    \end{equation}
+    An additional decision tree is created once $R(x)$ is calculated that aims to minimize the distance between its $p(x)$
+    and $R(x)$ throughout the data set. Then the predictions from this new tree are added to the preexisting $P(x)$:
+      \begin{equation}
+        P_{i+1}(x) = P_i(x) + p_n(x)
+      \end{equation}
+    In theory, $\lim_{i \to \infty} P_i(x) = 0$ \cite{mason2000boosting}. However, in practical purposes, infinity cannot be reached, so the algorithm is continued until error does not appreciably decrease with each iteration. However, this result is a number, rather than a classification, so for classification problems there is an additional step. Because the regression method used is tree based, the results are bounded on $[0,1]$ \cite{classificationexplanation}. Further, because only two classifications are used, the numerical predictions can simply be mapped onto a classification, yielding classified results from the probabilities.
+
+  \section{IMPLEMENTATION}
+    The goal of the model was to output a value of 0 or 1 based on details about the passenger. This value 0 or 1 would indicate whether the passenger died or survived. Two sets of data were provided. Firstly, a large set that had both information about the passengers and whether they survived. This data would be used to train the model. Also, a set of data that had the same factors about the passengers, but not whether they lived or survived. The goal of the model was to predict whether or not these passengers survived.
+    \subsection{FEATURES}
+
 
     \bibliography{Bibliography.bib}{}
     \bibliographystyle{plain}
