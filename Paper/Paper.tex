@@ -2,7 +2,7 @@
 
 \title{Predicting Deaths on the Titanic with Gradient Boosted Trees}
 \author{\sc{Ethan Reese}}
-\usepackage[margin=0.5in]{geometry}
+\usepackage[margin=1in]{geometry}
 
 \begin{document}
       \maketitle
@@ -11,14 +11,29 @@
      In this experiment, gradient boosted trees, through the XGBoost library, are used to build the model. Gradient boosted trees have recently gained prevalence because of both their efficiency and effectiveness for building models around simple data sets, both for categorization and regression \cite{one}. Many of the top scoring models on the data science competition website Kaggle use XGBoost as the underlying model. Gradient Boosted Trees are applicable to real world problems that use big data to predict future results and behavior. Notably, gradient boosted trees are aggressively used by major Wall Street firms to assess risk when offering a loan or decide whether securities are properly valued.
 
      \section{BACKGROUND}
-     The model uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function $f(x)$. This can be done by selecting any x and iterating using the equation:
+     There are many methods that can be used to derive binary classifications from tabular data. These alternates methods have different relative benefits in terms of runtime speed and accuracy, which can vary with different kinds of data.
+
+     \subsection{BOOSTED TREES}
+     The boosted tree method uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function $f(x)$. This can be done by selecting any x and iterating using the equation:
     \begin{equation}
       x_i = x_{i-1} - \gamma\frac{d}{dx}f(x_{i-1})
     \end{equation}
 
     $ \gamma $ is a constant that can be tuned to increase either precision or runtime speed. This sequence can continue iteratively until $x_i = x_{i-1}$, resulting ultimately in the x value for the minima of the function (the y value of this minima can be trivially calculated by plugging $x_i$ into $f(x)$).
 
-    Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error. Gradient boosting algorithms generally contain many seperate weak predictors (algorithms that predict results with less than 50\% accuracy) and combine those results into a stronger predictor. The stronger predictor should have significantly lower error.
+    Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error. Gradient boosting algorithms are ensemble methods, meaning that they generally contain many seperate weak predictors (algorithms that predict results with less than 50\% accuracy) and combine those results into a stronger predictor. The stronger predictor should have significantly lower error.
+
+    \subsection{RANDOM FOREST}
+      Like Boosted Trees, Random Forests are an ensemble method for deep learning. However, rather than boosting, random forests use a bagging method to combine the given results. Instead of making a weighted combination of the values, a random forest uses a more basic averaging method. Some studies indicate that random forests can approach error as low as that found in boosted tree algorithms, however it is able to run more quickly \cite{friedman2001elements}.
+
+      The method is trained by creating various decision trees based on a random subset of the features in the data set. It then selects the best points to split the data based on those randomly selected features to minimize the error. This continues until the minimum node count is reached, yielding many independent decision trees. Once this model has been trained, the test data can be run through each decision tree and thus has many predictions. For a classification problem, the ultimate prediction $P(x)$ is related to the set of individual tree predictions $T(x)$ as $P(x) = mode(T(x))$.
+
+      Random Forests achieve less error than boosted trees when only a small number of trees are generated, however gradient boosted trees become much more effective at their limit \cite{friedman2001elements}. Further, random forests are particularly vulnerable to correlation bias \cite{randomforest1}.
+
+    \subsection{NEURAL NETWORKS}
+      Another method could be used for the binary classification of tabular data through neural networks. Neural networks work by creating hidden layers that perform operations on the data. It can effectively take many sets of inputs and create hidden layers that perform operations on this data to produce categorized results. For more complex data sets, neural networks are a very effective method because they can make use of all of the data available \cite{neuralnets2}. However, for simpler data sets, these benefits are diminished. Further, neural networks are signficantly more difficult to implement and computationally expensive to train and run.
+  \section{IMPLEMENTATION}
+    The goal of the model was to output a value of 0 or 1 based on details about the passenger. This value 0 or 1 would indicate whether the passenger died or survived. Two sets of data were provided. Firstly, a large set that had both information about the passengers and whether they survived. This data would be used to train the model. Also, a set of data that had the same factors about the passengers, but not whether they lived or survived. The goal of the model was to predict whether or not these passengers survived. The XGBoost model was selected to make predictions.
 
     With XGBoost, the first step is to create a large set of decision trees. Decision trees can be constructed quickly by splitting up the data along artibrary lines into branches that ultimately lead to leafs. A singular leaf will then select a prediction that minimizes the mean square error for all of the points of test data that fit into the leaf, which will be the mean of the test data for simpler models. Trees use an imperfect greedy model to assign predictions to leafs because creating a perfect decsion tree is an np-complete problem \cite{two}.
 
@@ -37,8 +52,6 @@
       \end{equation}
     In theory, $\lim_{i \to \infty} P_i(x) = 0$ \cite{mason2000boosting}. However, in practical purposes, infinity cannot be reached, so the algorithm is continued until error does not appreciably decrease with each iteration. However, this result is a number, rather than a classification, so for classification problems there is an additional step. Because the regression method used is tree based, the results are bounded on $[0,1]$ \cite{classificationexplanation}. Further, because only two classifications are used, the numerical predictions can simply be mapped onto a classification, yielding classified results from the probabilities.
 
-  \section{IMPLEMENTATION}
-    The goal of the model was to output a value of 0 or 1 based on details about the passenger. This value 0 or 1 would indicate whether the passenger died or survived. Two sets of data were provided. Firstly, a large set that had both information about the passengers and whether they survived. This data would be used to train the model. Also, a set of data that had the same factors about the passengers, but not whether they lived or survived. The goal of the model was to predict whether or not these passengers survived.
     \subsection{FEATURES}
 
 
