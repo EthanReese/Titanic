@@ -3,7 +3,9 @@
 \title{Predicting Deaths on the Titanic with Gradient Boosted Trees}
 \author{\sc{Ethan Reese}}
 \usepackage[margin=1in]{geometry}
+\usepackage{setspace}
 
+\doublespacing
 \begin{document}
       \maketitle
 
@@ -14,14 +16,9 @@
      There are many methods that can be used to derive binary classifications from tabular data. These alternates methods have different relative benefits in terms of runtime speed and accuracy, which can vary with different kinds of data.
 
      \subsection{BOOSTED TREES}
-     The boosted tree method uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function $f(x)$. This can be done by selecting any x and iterating using the equation:
-    \begin{equation}
-      x_i = x_{i-1} - \gamma\frac{d}{dx}f(x_{i-1})
-    \end{equation}
+      Boosted trees use an ensemble method of deep learning based on gradient descent. They use an ensemble method for machine learning, which consists of generating a multitude of weak predictors (or models that predict with only slightly greater than 50\% accuracy) and combining the results to create one stronger result. The method is moderately fast to train and produces very strong results \cite{friedman2001elements}.
 
-    $ \gamma $ is a constant that can be tuned to increase either precision or runtime speed. This sequence can continue iteratively until $x_i = x_{i-1}$, resulting ultimately in the x value for the minima of the function (the y value of this minima can be trivially calculated by plugging $x_i$ into $f(x)$).
-
-    Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error. Gradient boosting algorithms are ensemble methods, meaning that they generally contain many seperate weak predictors (algorithms that predict results with less than 50\% accuracy) and combine those results into a stronger predictor. The stronger predictor should have significantly lower error.
+      It works by producing trees that aim to minimize the error of the sum of the results of all subsequent trees. Basing the new weak predictors on the results of the previous predictors allows the model to effeciently minimize error and produce a better result. Boosted trees are a good compromise with fast training time and robust accuracy \cite{friedman2001elements}.
 
     \subsection{RANDOM FOREST}
       Like Boosted Trees, Random Forests are an ensemble method for deep learning. However, rather than boosting, random forests use a bagging method to combine the given results. Instead of making a weighted combination of the values, a random forest uses a more basic averaging method. Some studies indicate that random forests can approach error as low as that found in boosted tree algorithms, however it is able to run more quickly \cite{friedman2001elements}.
@@ -31,8 +28,17 @@
       Random Forests achieve less error than boosted trees when only a small number of trees are generated, however gradient boosted trees become much more effective at their limit \cite{friedman2001elements}. Further, random forests are particularly vulnerable to correlation bias \cite{randomforest1}.
 
     \subsection{NEURAL NETWORKS}
-      Another method could be used for the binary classification of tabular data through neural networks. Neural networks work by creating hidden layers that perform operations on the data. It can effectively take many sets of inputs and create hidden layers that perform operations on this data to produce categorized results. For more complex data sets, neural networks are a very effective method because they can make use of all of the data available \cite{neuralnets2}. However, for simpler data sets, these benefits are diminished. Further, neural networks are signficantly more difficult to implement and computationally expensive to train and run.
-  \section{IMPLEMENTATION}
+      Another method could be used for the binary classification of tabular data through neural networks. Neural networks work by creating hidden layers that perform operations on the data. It can effectively take many sets of inputs and create hidden layers that perform operations on this data to produce categorized results \cite{neuralnets1}. For more complex data sets, neural networks are a very effective method because they can make use of all of the data available \cite{neuralnets2}. However, for simpler data sets, these benefits are diminished. Further, neural networks are signficantly more difficult to implement and computationally expensive to train and run.
+  \section{APPROACH}
+    Boosted trees were used for this model because of their ability to both train with reasonable speed and also predict effectively. The boosted tree method uses a method based on gradient descent to minimize error. Gradient descent is a method to efficiently minimize a function $f(x)$. This can be done by selecting any x and iterating using the equation:
+   \begin{equation}
+     x_i = x_{i-1} - \gamma\frac{d}{dx}f(x_{i-1})
+   \end{equation}
+
+   $ \gamma $ is a constant that can be tuned to increase either precision or runtime speed. This sequence can continue iteratively until $x_i = x_{i-1}$, resulting ultimately in the x value for the minima of the function (the y value of this minima can be trivially calculated by plugging $x_i$ into $f(x)$).
+
+   Likewise, a similar principle can be applied to boosting gradient trees to minimize the error. For binary classification problems, this error is generally calculated using the \textit{\%} error. Gradient boosting algorithms are ensemble methods, meaning that they generally contain many seperate weak predictors (algorithms that predict results with less than 50\% accuracy) and combine those results into a stronger predictor. The stronger predictor should have significantly lower error.
+
     The goal of the model was to output a value of 0 or 1 based on details about the passenger. This value 0 or 1 would indicate whether the passenger died or survived. Two sets of data were provided. Firstly, a large set that had both information about the passengers and whether they survived. This data would be used to train the model. Also, a set of data that had the same factors about the passengers, but not whether they lived or survived. The goal of the model was to predict whether or not these passengers survived. The XGBoost model was selected to make predictions.
 
     With XGBoost, the first step is to create a large set of decision trees. Decision trees can be constructed quickly by splitting up the data along artibrary lines into branches that ultimately lead to leafs. A singular leaf will then select a prediction that minimizes the mean square error for all of the points of test data that fit into the leaf, which will be the mean of the test data for simpler models. Trees use an imperfect greedy model to assign predictions to leafs because creating a perfect decsion tree is an np-complete problem \cite{two}.
@@ -52,8 +58,12 @@
       \end{equation}
     In theory, $\lim_{i \to \infty} P_i(x) = 0$ \cite{mason2000boosting}. However, in practical purposes, infinity cannot be reached, so the algorithm is continued until error does not appreciably decrease with each iteration. However, this result is a number, rather than a classification, so for classification problems there is an additional step. Because the regression method used is tree based, the results are bounded on $[0,1]$ \cite{classificationexplanation}. Further, because only two classifications are used, the numerical predictions can simply be mapped onto a classification, yielding classified results from the probabilities.
 
+  \section{IMPLEMENTATION}
+    In the direct construction of my model, my two primary decisions were to pick the features of the given data that were used to make a prediction and the parameters of the model. The parameters impact how many decision trees were used to form the boosted trees and how those decision trees are constructed.
     \subsection{FEATURES}
+      My model used five of the provided data's features (gender, age, immediate family, fare, ticket class, extended family on board). The model used these data to create dividing lines within the simple decision trees, which are then combined to form the boosted tree. The gender data gave a binary indication of whether a passenger was male or female. The age data indicated the age of every passenger as an integer. The immediate family count represented the number of parents or children that the passenger had on board. The fare indicates as an integer the amount that the passenger paid for passage on the Titanic. The ticket class was the class of cabin that the passenger was located in. Extended family on board was the total number of siblings and spouses that each passenger had on board.
 
+    \subsection{PARAMETERS}
 
     \bibliography{Bibliography.bib}{}
     \bibliographystyle{plain}

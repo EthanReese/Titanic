@@ -71,11 +71,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 val_X = testData[features]
 
-
+"""
 my_imputer = SimpleImputer()
 X_train = my_imputer.fit_transform(X_train)
 X_test = my_imputer.fit_transform(X_test)
 val_X = my_imputer.transform(val_X)
+"""
 
 #Create a pipeline that makes it work
 #pipe = Pipeline(SimpleImputer(), XGBRegressor(n_estimators = 1000, learning_rate = max_leaf_nodes))
