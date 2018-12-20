@@ -14,13 +14,7 @@ from sklearn.pipeline import make_pipeline
 from xgboost import XGBRegressor
 from xgboost.sklearn import XGBClassifier
 
-
-#For Testing
-def get_mae(max_leaf_nodes, train_X, val_X, train_y, val_y):
-    """
-    #Create a pipeline that processes the data and predicts
-    #Pipelines are dumb
-    my_pipeline = make_pipeline(SimpleImputer(), XGBRegressor(n_estimators = 1000, learning_rate = max_leaf_nodes))
+"""
     my_pipeline.fit(train_X,train_y, early_stopping_rounds=5, eval_set=[(val_X, val_y)])
     """
 
@@ -71,19 +65,17 @@ X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 val_X = testData[features]
 
-"""
 my_imputer = SimpleImputer()
 X_train = my_imputer.fit_transform(X_train)
 X_test = my_imputer.fit_transform(X_test)
 val_X = my_imputer.transform(val_X)
-"""
 
 #Create a pipeline that makes it work
 #pipe = Pipeline(SimpleImputer(), XGBRegressor(n_estimators = 1000, learning_rate = max_leaf_nodes))
 
 
-model = XGBRegressor(n_estimators = 5000, learning_rate = 0.25, objective="binary:hinge")
-model.fit(X_train, y_train, early_stopping_rounds = 5, eval_set=[(X_test, y_test)], eval_metric="error")
+model = XGBRegressor(n_estimators = 5000, learning_rate = 0.2, objective="binary:logistic")
+model.fit(X_train, y_train, early_stopping_rounds = 5, eval_set=[(X_test, y_test)], eval_metric="mae")
 guesses = model.predict(val_X)
 
 survived = (list(map(round, guesses)))
