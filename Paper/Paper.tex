@@ -4,6 +4,7 @@
 \author{\sc{Ethan Reese}}
 \usepackage[margin=1in]{geometry}
 \usepackage{setspace}
+\newcommand{\code}{\texttt}
 
 \doublespacing
 \begin{document}
@@ -59,12 +60,32 @@
     In theory, $\lim_{i \to \infty} P_i(x) = 0$ \cite{mason2000boosting}. However, in practical purposes, infinity cannot be reached, so the algorithm is continued until error does not appreciably decrease with each iteration. However, this result is a number, rather than a classification, so for classification problems there is an additional step. Because the regression method used is tree based, the results are bounded on $[0,1]$ \cite{classificationexplanation}. Further, because only two classifications are used, the numerical predictions can simply be mapped onto a classification, yielding classified results from the probabilities.
 
   \section{IMPLEMENTATION}
-    In the direct construction of my model, my two primary decisions were to pick the features of the given data that were used to make a prediction and the parameters of the model. The parameters impact how many decision trees were used to form the boosted trees and how those decision trees are constructed.
+    In the direct construction of my model, my two primary decisions were to pick the features of the given data that were used to make a prediction and the parameters of the model.
     \subsection{FEATURES}
-      My model used five of the provided data's features (gender, age, immediate family, fare, ticket class, extended family on board). The model used these data to create dividing lines within the simple decision trees, which are then combined to form the boosted tree. The gender data gave a binary indication of whether a passenger was male or female. The age data indicated the age of every passenger as an integer. The immediate family count represented the number of parents or children that the passenger had on board. The fare indicates as an integer the amount that the passenger paid for passage on the Titanic. The ticket class was the class of cabin that the passenger was located in. Extended family on board was the total number of siblings and spouses that each passenger had on board.
+      The model used five of the provided data's features (gender, age, immediate family, fare, ticket class, extended family on board). The model used these data to create dividing lines within the simple decision trees, which are then combined to form the boosted tree. The gender data gave a binary indication of whether a passenger was male or female. The age data indicated the age of every passenger as an integer. The immediate family count represented the number of parents or children that the passenger had on board. The fare indicates as an integer the amount that the passenger paid for passage on the Titanic. The ticket class was the class of cabin that the passenger was located in. Extended family on board was the total number of siblings and spouses that each passenger had on board.
 
     \subsection{PARAMETERS}
+      The parameters used to construct the XGBoost tree influenced the number of basic decision trees made and the size of those trees. All of the parameters were optimized through a process of cross validation aiming to maxmize the negative mean square error, thus minimizing the absolute value of the error. To do this, the data were randomly split into ten distinct groups. Then, ten experiments are run, each one using nine of the sets as training data and one set of data as test data. The singular set used as test data is different for each of the ten experiments. The error is calculated for each of these experiments and then the arithmetic mean is taken of the set.
 
-    \bibliography{Bibliography.bib}{}
-    \bibliographystyle{plain}
-  \end{document}
+      The parameters were optimized through experimentation. To optimize the individual parameters, a parameter was first isolated for optimiztion. Then, this isolated parameter was varied by values an order of magnitude apart. The model was run one time for each of these values and a cross validation score was generated for each. The parameter value that yielded the highest cross validation score (smallest error) was identified and more values were tested for the parameter in the same order of magnitude, ultimately revealing the most effective value for the parameter. Then, the parameter was locked at this value and the subsequent paramter was isolated. This process was repeated for every parameter relevant to forming the decision trees involved in the model.
+      \subsubsection{Learning Rate (\code{eta})}
+        The learning rate of a gradient boosted tree impacts the scaling of the features in each tree. A lower learning rate leads to a higher number of decision trees, meaning a potentially more accurate result but a substantially slower runtime. However, a lower learning rate can result in an overfit model. The learning rate used was $0.127$.
+      \subsubsection{Maximum Depth (\code{max\_depth})}
+        The maximum depth is the most number of layers that any decision tree will have as part of the model. A higher value means that the model constructs more detailed trees, leaving a vulnerability to overfitting. For the model, the maximum depth was reduced to 3 from the default value of 6.
+      \subsubsection{Minimum Child Weight (\code{min\_child\_weight)}}
+        As the respective decision trees are being constructed, the weight of each individual leaf decreases with each partition made. Once a child reaches the minimum child weight, the tree discontinues the partitioning process. A higher value results in a less complex model and decreases the chances of overfitting. For the model, the minimum child weight was lowered from the default value of 1 down to 0, meaning that the minimum child weight was not a factor that indicated when to stop forming the trees. The lower value for maximum depth provided this stopping point in a sensible location.
+      \subsubsection{Subsampling (\code{subsample})}
+        The subsampling value is the amount of data randomly selected before growing trees, a lower value is useful to prevent overfitting because less of the training data is used. This was lowered for 0.947 from the dfault value of 1 in the model, thereby reducing the model's tendency to overfit.
+      \subsubsection{Estimators (\code{n\_estimators})}
+        The number of estimators is the number of individual decision trees used in the formation of the ultimate boosted tree. However, XGBoost has a built in method that will stop the model from continuing to add trees after each additional tree is no longer making an appreciable difference to the error (a sign that the model is beginning to overfit). It stops the model to continue to grow even if the number of estimators defined in the model has not yet been reached. Thus, the number of estimators was set to 1000, a number of estimators that would never be reached. The model generally used between 4 and 10 trees in practice.
+  \section{EVALUATION}
+    The model proved to be relatively ineffective at predicting which passengers would die in the test data set. The model was scored as a percentage of the number of passengers in the test data set that had their status of survival guessed correctly. The most effective run was able to produce a dataset with 76.555\% accuracy. This places the model in the lower 50\% of models entered in the Kaggle competition.
+
+    Other models using boosted trees and neural networks were able to perform far better because of more robust feature engineering. I did not include any feature engineering in my model. Having more features would have allowed the model to form more trees and take greater advantage of the power of gradient boosted trees. In the future, many more features could have been engineered on the data set to allow more calculations to be done and resulting a far more robust model.
+
+    Additionally, my method of optimiziation was adequate for the problem but not scalable to a problem with more features. The parameters of the model are interconnected and have interaction between them. Thus, varying them one at a time in isolation may result in slightly flawed values. For a model on a small scale this doesn't make a major difference, but as more features are introduced, the difference becomes more substantial. Grid Search based optimization methods offer a way around this by optimizing multiple variables simultaneously, thus taking the interconnectedness into account.
+
+    Ultimately, the model requries more features and a more robust optimization method to be effective.
+  \bibliography{Bibliography.bib}{}
+  \bibliographystyle{plain}
+\end{document}
